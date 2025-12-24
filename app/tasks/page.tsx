@@ -31,7 +31,7 @@ export default function TasksPage() {
     const pending = tasks.filter((t) => t.status === "Pending")
     const completed = tasks.filter((t) => t.status === "Completed")
     const todayFiltered = tasks.filter((t) => {
-      const taskDate = new Date(t.createdAt)
+      const taskDate = new Date(t.scheduledAt)
       taskDate.setHours(0, 0, 0, 0)
       return taskDate.getTime() === today.getTime()
     })
@@ -105,7 +105,7 @@ export default function TasksPage() {
           </AnimatePresence>
 
           {/* Filter Tabs */}
-          <div className="flex gap-2 mb-8 overflow-x-auto">
+          <div className="md:flex hidden gap-2 mb-8 overflow-x-auto">
             {(["today","all",  "pending", "completed"] as const).map((f) => (
               <button
                 key={f}

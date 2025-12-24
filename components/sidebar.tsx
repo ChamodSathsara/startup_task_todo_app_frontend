@@ -58,13 +58,13 @@ export function Sidebar({ onOpenChange }: SidebarProps) {
           const Icon = item.icon
           const active = isActive(item.href)
           return (
-            <Link key={item.href} href={item.href}>
+            <Link className="" key={item.href} href={item.href}>
               <Button
                 variant="ghost"
-                className={`w-full justify-start ${
+                className={`w-full justify-start  ${
                   active
-                    ? "bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary"
-                    : "text-sidebar-foreground hover:bg-sidebar-accent"
+                    ? "bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary py-6 mb-2"
+                    : "text-sidebar-foreground hover:bg-sidebar-accent py-6 mb-2"
                 }`}
               >
                 <Icon className="w-5 h-5 flex-shrink-0" />
@@ -75,24 +75,7 @@ export function Sidebar({ onOpenChange }: SidebarProps) {
         })}
       </nav>
 
-      {/* User Profile */}
-      <div className="p-4 border-t border-sidebar-border">
-        {user && (
-          <div className={`flex items-center gap-3 ${!isOpen && "justify-center"}`}>
-            <img
-              src={user.avatar || "/placeholder.svg"}
-              alt={user.username}
-              className="w-10 h-10 rounded-full flex-shrink-0"
-            />
-            {isOpen && (
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-sidebar-foreground truncate">{user.username}</p>
-                <p className="text-xs text-sidebar-accent-foreground truncate">{user.email}</p>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+     
     </motion.aside>
   )
 }

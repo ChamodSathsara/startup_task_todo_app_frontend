@@ -27,6 +27,7 @@ export const taskAPI = {
 
   // create new task
   createTask: async (taskData: { title: string; description?: string; scheduledAt?: string }) => {
+    console.log("creating:", taskData);
     const response = await apiClient.post("/api/tasks", taskData)
     return response.data
   },

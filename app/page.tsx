@@ -5,26 +5,28 @@ import { useTask } from "@/context/task-context";
 import { CheckCircle2, Clock, Zap } from "lucide-react";
 import { motion } from "framer-motion";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { TaskCard } from "@/components/task-card"; 
+import { TaskCard } from "@/components/task-card";
 
 export default function Dashboard() {
   const { tasks } = useTask();
   const isMobile = useIsMobile();
-const today = new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD
+  const today = new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD
 
-const pendingTasks = tasks.filter(
-  (t) =>
-    t.status === "Pending" &&
-    new Date(t.createdAt).toLocaleDateString("en-CA") === today
-).length;
+  const pendingTasks = tasks.filter(
+    (t) =>
+      t.status === "Pending" &&
+      new Date(t.scheduledAt).toLocaleDateString("en-CA") === today
+  ).length;
 
-const completedTasks = tasks.filter(
-  (t) =>
-    t.status === "Completed" &&
-    new Date(t.createdAt).toLocaleDateString("en-CA") === today
-).length;
+  const completedTasks = tasks.filter(
+    (t) =>
+      t.status === "Completed" &&
+      new Date(t.scheduledAt).toLocaleDateString("en-CA") === today
+  ).length;
 
   const totalTasks = tasks.length;
+
+  console.log(completedTasks, pendingTasks);
 
   const stats = [
     { label: "Total Tasks", value: totalTasks, icon: Clock },
@@ -152,14 +154,27 @@ const completedTasks = tasks.filter(
                     <span className="w-1 h-5 bg-amber-500 rounded"></span>
                     Pending
                     <span className="ml-auto text-xs font-normal bg-amber-500/10 text-amber-600 dark:text-amber-400 px-2.5 py-1 rounded-full">
-                      {tasks.filter((t) => t.status === "Pending").length}
+                      {
+                        tasks.filter(
+                          (t) =>
+                            t.status === "Pending" &&
+                            new Date(t.scheduledAt).toLocaleDateString(
+                              "en-CA"
+                            ) === today
+                        ).length
+                      }
                     </span>
                   </h3>
                   <motion.div
                     variants={containerVariants}
                     className="space-y-3"
                   >
-                    {tasks.filter((t) => t.status === "Pending").length === 0 ? (
+                    {tasks.filter(
+                      (t) =>
+                        t.status === "Pending" &&
+                        new Date(t.scheduledAt).toLocaleDateString("en-CA") ===
+                          today
+                    ).length === 0 ? (
                       <motion.div
                         variants={itemVariants}
                         className="bg-secondary/30 border border-dashed border-border rounded-lg p-8 text-center"
@@ -188,13 +203,16 @@ const completedTasks = tasks.filter(
                       </motion.div>
                     ) : (
                       tasks
-                        .filter((t) => t.status === "Pending")
+                        .filter(
+                          (t) =>
+                            t.status === "Pending" &&
+                            new Date(t.scheduledAt).toLocaleDateString(
+                              "en-CA"
+                            ) === today
+                        )
                         .slice(0, 3)
                         .map((task) => (
-                          <motion.div
-                            key={task._id}
-                            variants={itemVariants}
-                          >
+                          <motion.div key={task._id} variants={itemVariants}>
                             <TaskCard task={task} />
                           </motion.div>
                         ))
@@ -208,14 +226,27 @@ const completedTasks = tasks.filter(
                     <span className="w-1 h-5 bg-green-500 rounded"></span>
                     Completed
                     <span className="ml-auto text-xs font-normal bg-green-500/10 text-green-600 dark:text-green-400 px-2.5 py-1 rounded-full">
-                      {tasks.filter((t) => t.status === "Completed").length}
+                      {
+                        tasks.filter(
+                          (t) =>
+                            t.status === "Completed" &&
+                            new Date(t.scheduledAt).toLocaleDateString(
+                              "en-CA"
+                            ) === today
+                        ).length
+                      }
                     </span>
                   </h3>
                   <motion.div
                     variants={containerVariants}
                     className="space-y-3"
                   >
-                    {tasks.filter((t) => t.status === "Completed").length === 0 ? (
+                    {tasks.filter(
+                      (t) =>
+                        t.status === "Completed" &&
+                        new Date(t.scheduledAt).toLocaleDateString("en-CA") ===
+                          today
+                    ).length === 0 ? (
                       <motion.div
                         variants={itemVariants}
                         className="bg-secondary/30 border border-dashed border-border rounded-lg p-8 text-center"
@@ -244,13 +275,16 @@ const completedTasks = tasks.filter(
                       </motion.div>
                     ) : (
                       tasks
-                        .filter((t) => t.status === "Completed")
+                        .filter(
+                          (t) =>
+                            t.status === "Completed" &&
+                            new Date(t.scheduledAt).toLocaleDateString(
+                              "en-CA"
+                            ) === today
+                        )
                         .slice(0, 3)
                         .map((task) => (
-                          <motion.div
-                            key={task._id}
-                            variants={itemVariants}
-                          >
+                          <motion.div key={task._id} variants={itemVariants}>
                             <TaskCard task={task} />
                           </motion.div>
                         ))

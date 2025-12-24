@@ -8,7 +8,7 @@ export interface Task {
   title: string
   description?: string
   status: "Pending" | "Completed"
-  scheduledAt?: string
+  scheduledAt?: any
   createdAt: string
   updatedAt: string
 }

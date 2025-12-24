@@ -14,7 +14,7 @@ export default function CalendarPage() {
   const { tasks } = useTask()
 
   const tasksForSelectedDate = tasks.filter(task => {
-  const taskDate = new Date(task.createdAt)
+  const taskDate = new Date(task.scheduledAt)
     .toLocaleDateString("en-CA"); // YYYY-MM-DD
   return taskDate === selectedDate;
 });

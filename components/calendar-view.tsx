@@ -36,7 +36,7 @@ export function CalendarView({ selectedDate, onSelectDate, tasks }: CalendarView
 
   const getTasksForDate = (day: number) => {
     const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`
-    return tasks.filter((task) => task.dueDate === dateStr)
+    return tasks.filter((task) => task.scheduledAt === dateStr)
   }
 
   const isToday = (day: number) => {
