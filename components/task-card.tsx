@@ -10,9 +10,10 @@ import { ConfirmDialog } from "@/components/confirm-dialog"
 
 interface TaskCardProps {
   task: Task
+  onTaskUpdated?: () => void
 }
 
-export function TaskCard({ task }: TaskCardProps) {
+export function TaskCard({ task, onTaskUpdated }: TaskCardProps) {
   const { toggleTaskStatus, deleteTask } = useTask()
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
@@ -41,6 +42,7 @@ export function TaskCard({ task }: TaskCardProps) {
       await toggleTaskStatus(task._id)
       setIsStatusDialogOpen(false)
       fetchTasks();
+      onTaskUpdated?.();
     } catch (error) {
       console.error("[v0] Error toggling status:", error)
     } finally {

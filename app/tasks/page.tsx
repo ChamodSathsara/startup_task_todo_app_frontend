@@ -1,11 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { MainLayout } from "@/components/main-layout"
 import { TaskCard } from "@/components/task-card"
 import { AddTaskForm } from "@/components/add-task-form"
 import { useTask } from "@/context/task-context"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import { Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
@@ -13,9 +13,14 @@ export default function TasksPage() {
   const { tasks, fetchTasks } = useTask()
   const [showForm, setShowForm] = useState(false)
   const [filter, setFilter] = useState<"all" | "pending" | "completed">("all")
+  const [key, setKey] = useState(0) // Key to force re-render of tasks grid
 
-  const pendingTasks = tasks.filter((t) => t.status === "Pending")
-  const completedTasks = tasks.filter((t) => t.status === "Completed")
+  // Use useMemo to compute filtered tasks whenever tasks change
+  const { pendingTasks, completedTasks } = useMemo(() => {
+    const pending = tasks.filter((t) => t.status === "Pending")
+    const completed = tasks.filter((t) => t.status === "Completed")
+    return { pendingTasks: pending, completedTasks: completed }
+  }, [tasks])
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -40,6 +45,11 @@ export default function TasksPage() {
   const handleFormClose = async () => {
     setShowForm(false)
     await fetchTasks()
+    setKey(prev => prev + 1) // Force re-render with animation
+  }
+
+  const handleTaskUpdated = () => {
+    setKey(prev => prev + 1) // Force re-render with animation
   }
 
   return (
@@ -51,7 +61,7 @@ export default function TasksPage() {
             <h1 className="text-3xl md:text-4xl font-bold text-foreground">Tasks</h1>
             <Button
               onClick={() => setShowForm(!showForm)}
-              className="w-full hidden md:w-auto bg-primary text-primary-foreground hover:bg-primary/90 md:flex items-center justify-center gap-2"
+              className="w-full md:w-auto bg-primary text-primary-foreground hover:bg-primary/90 flex items-center justify-center gap-2"
             >
               <Plus className="w-5 h-5" />
               Add Task
@@ -61,17 +71,18 @@ export default function TasksPage() {
 
         <div className="px-6 md:px-8 py-8">
           {/* Add Task Form */}
-          {showForm && (
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="mb-8"
-            >
-              {/* <AddTaskForm onClose={() => setShowForm(false)} /> */}
-              <AddTaskForm onClose={handleFormClose} />
-            </motion.div>
-          )}
+          <AnimatePresence>
+            {showForm && (
+              <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="mb-8"
+              >
+                <AddTaskForm onClose={handleFormClose} />
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Filter Tabs */}
           <div className="flex gap-2 mb-8 overflow-x-auto">
@@ -90,8 +101,8 @@ export default function TasksPage() {
             ))}
           </div>
 
-          {/* Tasks Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Tasks Grid - key prop forces re-render with animation */}
+          <div key={key} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Pending Tasks */}
             {(filter === "all" || filter === "pending") && (
               <motion.div variants={containerVariants} initial="hidden" animate="visible">
@@ -110,7 +121,7 @@ export default function TasksPage() {
                   ) : (
                     pendingTasks.map((task) => (
                       <motion.div key={task._id} variants={itemVariants}>
-                        <TaskCard task={task} />
+                        <TaskCard task={task} onTaskUpdated={handleTaskUpdated} />
                       </motion.div>
                     ))
                   )}
@@ -136,7 +147,7 @@ export default function TasksPage() {
                   ) : (
                     completedTasks.map((task) => (
                       <motion.div key={task._id} variants={itemVariants}>
-                        <TaskCard task={task} />
+                        <TaskCard task={task} onTaskUpdated={handleTaskUpdated} />
                       </motion.div>
                     ))
                   )}
