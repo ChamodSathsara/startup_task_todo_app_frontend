@@ -110,9 +110,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       const response = await taskAPI.getTasks(date)
       dispatch({ type: "SET_TASKS", payload: response.data || [] })
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || "Failed to fetch tasks"
-      dispatch({ type: "SET_ERROR", payload: errorMessage })
-      console.error("[v0] Error fetching tasks:", error)
+      dispatch({ type: "SET_ERROR", payload: error.message })
     }
   }
 
@@ -123,45 +121,43 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     error: state.error,
     addTask: async (task) => {
       try {
-        dispatch({ type: "SET_ERROR", payload: null })
         const response = await taskAPI.createTask(task)
+        // Immediately add the new task to state
         dispatch({ type: "ADD_TASK", payload: response.data })
+        // Also fetch all tasks to ensure consistency
+        await fetchTasks()
       } catch (error: any) {
-        const errorMessage = error.response?.data?.message || "Failed to create task"
-        dispatch({ type: "SET_ERROR", payload: errorMessage })
+        dispatch({ type: "SET_ERROR", payload: error.message })
         throw error
       }
     },
     updateTask: async (id, task) => {
       try {
-        dispatch({ type: "SET_ERROR", payload: null })
         const response = await taskAPI.updateTask(id, task)
         dispatch({ type: "UPDATE_TASK", payload: response.data })
+        await fetchTasks()
       } catch (error: any) {
-        const errorMessage = error.response?.data?.message || "Failed to update task"
-        dispatch({ type: "SET_ERROR", payload: errorMessage })
+        dispatch({ type: "SET_ERROR", payload: error.message })
         throw error
       }
     },
     deleteTask: async (id) => {
       try {
-        dispatch({ type: "SET_ERROR", payload: null })
         await taskAPI.deleteTask(id)
         dispatch({ type: "DELETE_TASK", payload: id })
+        await fetchTasks()
       } catch (error: any) {
-        const errorMessage = error.response?.data?.message || "Failed to delete task"
-        dispatch({ type: "SET_ERROR", payload: errorMessage })
+        dispatch({ type: "SET_ERROR", payload: error.message })
         throw error
       }
     },
     toggleTaskStatus: async (id) => {
       try {
-        dispatch({ type: "SET_ERROR", payload: null })
         const response = await taskAPI.toggleTaskStatus(id)
         dispatch({ type: "UPDATE_TASK", payload: response.data })
+        await fetchTasks()
       } catch (error: any) {
-        const errorMessage = error.response?.data?.message || "Failed to toggle task status"
-        dispatch({ type: "SET_ERROR", payload: errorMessage })
+        dispatch({ type: "SET_ERROR", payload: error.message })
         throw error
       }
     },

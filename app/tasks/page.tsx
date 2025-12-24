@@ -10,7 +10,7 @@ import { Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 export default function TasksPage() {
-  const { tasks } = useTask()
+  const { tasks, fetchTasks } = useTask()
   const [showForm, setShowForm] = useState(false)
   const [filter, setFilter] = useState<"all" | "pending" | "completed">("all")
 
@@ -35,6 +35,11 @@ export default function TasksPage() {
       y: 0,
       transition: { duration: 0.3 },
     },
+  }
+
+  const handleFormClose = async () => {
+    setShowForm(false)
+    await fetchTasks()
   }
 
   return (
@@ -63,7 +68,8 @@ export default function TasksPage() {
               exit={{ opacity: 0, y: -20 }}
               className="mb-8"
             >
-              <AddTaskForm onClose={() => setShowForm(false)} />
+              {/* <AddTaskForm onClose={() => setShowForm(false)} /> */}
+              <AddTaskForm onClose={handleFormClose} />
             </motion.div>
           )}
 

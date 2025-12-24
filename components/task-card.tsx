@@ -20,11 +20,14 @@ export function TaskCard({ task }: TaskCardProps) {
   const [isDeleting, setIsDeleting] = useState(false)
   const [isTogglingStatus, setIsTogglingStatus] = useState(false)
 
+  const fetchTasks = useTask().fetchTasks;
+
   const handleDelete = async () => {
     setIsDeleting(true)
     try {
       await deleteTask(task._id)
       setIsDeleteOpen(false)
+      fetchTasks();
     } catch (error) {
       console.error("[v0] Error deleting task:", error)
     } finally {
@@ -37,6 +40,7 @@ export function TaskCard({ task }: TaskCardProps) {
     try {
       await toggleTaskStatus(task._id)
       setIsStatusDialogOpen(false)
+      fetchTasks();
     } catch (error) {
       console.error("[v0] Error toggling status:", error)
     } finally {
