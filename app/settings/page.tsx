@@ -7,16 +7,10 @@ import { MainLayout } from "@/components/main-layout"
 import { useTask } from "@/context/task-context"
 import { motion } from "framer-motion"
 import { Moon, Sun, Lock, User, Mail, Save, LogOut } from "lucide-react"
-import { Button } from "@/components/ui/button"
 
 export default function SettingsPage() {
   const { user, setUser } = useTask()
   const [isDarkMode, setIsDarkMode] = useState(false)
-  const [email, setEmail] = useState(user?.email || "")
-  const [password, setPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
-  const [isSaving, setIsSaving] = useState(false)
-  const [savedStatus, setSavedStatus] = useState<"idle" | "saving" | "success" | "error">("idle")
 
   const toggleTheme = () => {
     setIsDarkMode(!isDarkMode)
@@ -27,43 +21,6 @@ export default function SettingsPage() {
     }
   }
 
-  const handleSaveProfile = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setSavedStatus("saving")
-    setIsSaving(true)
-
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 800))
-
-    
-
-    setSavedStatus("success")
-    setIsSaving(false)
-
-    setTimeout(() => setSavedStatus("idle"), 2000)
-  }
-
-  const handlePasswordChange = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (password !== confirmPassword) {
-      setSavedStatus("error")
-      setTimeout(() => setSavedStatus("idle"), 2000)
-      return
-    }
-
-    setSavedStatus("saving")
-    setIsSaving(true)
-
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 800))
-
-    setSavedStatus("success")
-    setPassword("")
-    setConfirmPassword("")
-    setIsSaving(false)
-
-    setTimeout(() => setSavedStatus("idle"), 2000)
-  }
 
   const containerVariants = {
     hidden: { opacity: 0 },
