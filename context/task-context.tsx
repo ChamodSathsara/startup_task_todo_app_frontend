@@ -1,162 +1,179 @@
 "use client"
 
-import { createContext, useContext, useState, useCallback, ReactNode } from 'react'
-import { tasksApi } from '@/lib/api/tasks.api'
-import type { Task, CreateTaskDto, UpdateTaskDto } from '@/lib/api.type'
+import { createContext, useContext, useReducer, useEffect, type ReactNode } from "react"
+import { taskAPI } from "@/lib/api-client"
+
+export interface Task {
+  _id: string
+  title: string
+  description?: string
+  status: "Pending" | "Completed"
+  scheduledAt?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface User {
+  _id: string
+  name: string
+  email: string
+}
 
 interface TaskContextType {
   tasks: Task[]
+  user: User | null
   loading: boolean
   error: string | null
-  fetchTasks: (date?: string) => Promise<void>
-  fetchTask: (id: string) => Promise<Task | undefined>
-  addTask: (data: CreateTaskDto) => Promise<Task | undefined>
-  updateTask: (id: string, data: UpdateTaskDto) => Promise<Task | undefined>
-  toggleTask: (id: string) => Promise<void>
+  addTask: (task: { title: string; description?: string; scheduledAt?: string }) => Promise<void>
+  updateTask: (id: string, task: Partial<Task>) => Promise<void>
   deleteTask: (id: string) => Promise<void>
+  toggleTaskStatus: (id: string) => Promise<void>
+  fetchTasks: (date?: string) => Promise<void>
+  setUser: (user: User) => void
 }
 
 const TaskContext = createContext<TaskContextType | undefined>(undefined)
 
+type TaskAction =
+  | { type: "SET_TASKS"; payload: Task[] }
+  | { type: "ADD_TASK"; payload: Task }
+  | { type: "UPDATE_TASK"; payload: Task }
+  | { type: "DELETE_TASK"; payload: string }
+  | { type: "SET_USER"; payload: User | null }
+  | { type: "SET_LOADING"; payload: boolean }
+  | { type: "SET_ERROR"; payload: string | null }
+
+const initialState: { tasks: Task[]; user: User | null; loading: boolean; error: string | null } = {
+  tasks: [],
+  user: null,
+  loading: true,
+  error: null,
+}
+
+function taskReducer(
+  state: { tasks: Task[]; user: User | null; loading: boolean; error: string | null },
+  action: TaskAction,
+) {
+  switch (action.type) {
+    case "SET_TASKS":
+      return {
+        ...state,
+        tasks: action.payload,
+        loading: false,
+      }
+    case "ADD_TASK":
+      return {
+        ...state,
+        tasks: [action.payload, ...state.tasks],
+      }
+    case "UPDATE_TASK":
+      return {
+        ...state,
+        tasks: state.tasks.map((task) => (task._id === action.payload._id ? action.payload : task)),
+      }
+    case "DELETE_TASK":
+      return {
+        ...state,
+        tasks: state.tasks.filter((task) => task._id !== action.payload),
+      }
+    case "SET_USER":
+      return {
+        ...state,
+        user: action.payload,
+      }
+    case "SET_LOADING":
+      return {
+        ...state,
+        loading: action.payload,
+      }
+    case "SET_ERROR":
+      return {
+        ...state,
+        error: action.payload,
+      }
+    default:
+      return state
+  }
+}
+
 export function TaskProvider({ children }: { children: ReactNode }) {
-  const [tasks, setTasks] = useState<Task[]>([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [state, dispatch] = useReducer(taskReducer, initialState)
 
-  // Fetch all tasks
-  const fetchTasks = useCallback(async (date?: string) => {
-    setLoading(true)
-    setError(null)
-    try {
-      const response = await tasksApi.getAll(date)
-      setTasks(response.data || [])
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch tasks')
-      console.error('Error fetching tasks:', err)
-    } finally {
-      setLoading(false)
-    }
+  useEffect(() => {
+    fetchTasks()
   }, [])
 
-  // Fetch single task
-  const fetchTask = useCallback(async (id: string) => {
-    setLoading(true)
-    setError(null)
+  const fetchTasks = async (date?: string) => {
     try {
-      const response = await tasksApi.getById(id)
-      return response.data
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch task')
-      console.error('Error fetching task:', err)
-      throw err
-    } finally {
-      setLoading(false)
+      dispatch({ type: "SET_LOADING", payload: true })
+      dispatch({ type: "SET_ERROR", payload: null })
+      const response = await taskAPI.getTasks(date)
+      dispatch({ type: "SET_TASKS", payload: response.data || [] })
+    } catch (error: any) {
+      dispatch({ type: "SET_ERROR", payload: error.message })
     }
-  }, [])
+  }
 
-  // Add task
-  const addTask = useCallback(async (data: CreateTaskDto) => {
-    setLoading(true)
-    setError(null)
-    try {
-      const response = await tasksApi.create(data)
-      if (response.data) {
-        // Add to local state immediately for instant UI update
-        setTasks(prev => [response.data!, ...prev])
-        return response.data
+  const value: TaskContextType = {
+    tasks: state.tasks,
+    user: state.user,
+    loading: state.loading,
+    error: state.error,
+    addTask: async (task) => {
+      try {
+        const response = await taskAPI.createTask(task)
+        // Immediately add the new task to state
+        dispatch({ type: "ADD_TASK", payload: response.data })
+        // Also fetch all tasks to ensure consistency
+        await fetchTasks()
+      } catch (error: any) {
+        dispatch({ type: "SET_ERROR", payload: error.message })
+        throw error
       }
-    } catch (err: any) {
-      setError(err.message || 'Failed to create task')
-      console.error('Error creating task:', err)
-      throw err
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
-  // Update task
-  const updateTask = useCallback(async (id: string, data: UpdateTaskDto) => {
-    setLoading(true)
-    setError(null)
-    try {
-      const response = await tasksApi.update(id, data)
-      if (response.data) {
-        // Update local state immediately
-        setTasks(prev => 
-          prev.map(task => task._id === id ? response.data! : task)
-        )
-        return response.data
+    },
+    updateTask: async (id, task) => {
+      try {
+        const response = await taskAPI.updateTask(id, task)
+        dispatch({ type: "UPDATE_TASK", payload: response.data })
+        await fetchTasks()
+      } catch (error: any) {
+        dispatch({ type: "SET_ERROR", payload: error.message })
+        throw error
       }
-    } catch (err: any) {
-      setError(err.message || 'Failed to update task')
-      console.error('Error updating task:', err)
-      throw err
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
-  // Toggle task status
-  const toggleTask = useCallback(async (id: string) => {
-    setLoading(true)
-    setError(null)
-    try {
-      const response = await tasksApi.toggleStatus(id)
-      if (response.data) {
-        // Update local state immediately
-        setTasks(prev => 
-          prev.map(task => task._id === id ? response.data! : task)
-        )
+    },
+    deleteTask: async (id) => {
+      try {
+        await taskAPI.deleteTask(id)
+        dispatch({ type: "DELETE_TASK", payload: id })
+        await fetchTasks()
+      } catch (error: any) {
+        dispatch({ type: "SET_ERROR", payload: error.message })
+        throw error
       }
-    } catch (err: any) {
-      setError(err.message || 'Failed to toggle task')
-      console.error('Error toggling task:', err)
-      throw err
-    } finally {
-      setLoading(false)
-    }
-  }, [])
+    },
+    toggleTaskStatus: async (id) => {
+      try {
+        const response = await taskAPI.toggleTaskStatus(id)
+        dispatch({ type: "UPDATE_TASK", payload: response.data })
+        await fetchTasks()
+      } catch (error: any) {
+        dispatch({ type: "SET_ERROR", payload: error.message })
+        throw error
+      }
+    },
+    fetchTasks,
+    setUser: (user) => {
+      dispatch({ type: "SET_USER", payload: user })
+    },
+  }
 
-  // Delete task
-  const deleteTask = useCallback(async (id: string) => {
-    setLoading(true)
-    setError(null)
-    try {
-      await tasksApi.delete(id)
-      // Remove from local state immediately
-      setTasks(prev => prev.filter(task => task._id !== id))
-    } catch (err: any) {
-      setError(err.message || 'Failed to delete task')
-      console.error('Error deleting task:', err)
-      throw err
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
-  return (
-    <TaskContext.Provider
-      value={{
-        tasks,
-        loading,
-        error,
-        fetchTasks,
-        fetchTask,
-        addTask,
-        updateTask,
-        toggleTask,
-        deleteTask,
-      }}
-    >
-      {children}
-    </TaskContext.Provider>
-  )
+  return <TaskContext.Provider value={value}>{children}</TaskContext.Provider>
 }
 
 export function useTask() {
   const context = useContext(TaskContext)
-  if (context === undefined) {
-    throw new Error('useTask must be used within a TaskProvider')
+  if (!context) {
+    throw new Error("useTask must be used within TaskProvider")
   }
   return context
 }
