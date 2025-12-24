@@ -11,6 +11,7 @@ const apiClient = axios.create({
 
 // Task API endpoints
 export const taskAPI = {
+  // get task list by date filter
   getTasks: async (date?: string) => {
     const response = await apiClient.get("/api/tasks", {
       params: date ? { date } : {},
@@ -18,26 +19,32 @@ export const taskAPI = {
     return response.data
   },
 
+  // get task by id
   getTaskById: async (id: string) => {
     const response = await apiClient.get(`/api/tasks/${id}`)
     return response.data
   },
 
+  // create new task
   createTask: async (taskData: { title: string; description?: string; scheduledAt?: string }) => {
     const response = await apiClient.post("/api/tasks", taskData)
     return response.data
   },
 
+  // update existing task
   updateTask: async (id: string, taskData: Partial<any>) => {
     const response = await apiClient.put(`/api/tasks/${id}`, taskData)
     return response.data
   },
 
+  // toggle task status(Pending => Completed)
   toggleTaskStatus: async (id: string) => {
     const response = await apiClient.patch(`/api/tasks/${id}/toggle`)
     return response.data
   },
 
+
+  // delete task
   deleteTask: async (id: string) => {
     const response = await apiClient.delete(`/api/tasks/${id}`)
     return response.data
@@ -45,21 +52,21 @@ export const taskAPI = {
 }
 
 // User API endpoints
-export const userAPI = {
-  createUser: async (userData: { name: string; email: string; password: string }) => {
-    const response = await apiClient.post("/api/users", userData)
-    return response.data
-  },
+// export const userAPI = {
+//   createUser: async (userData: { name: string; email: string; password: string }) => {
+//     const response = await apiClient.post("/api/users", userData)
+//     return response.data
+//   },
 
-  getUser: async (id: string) => {
-    const response = await apiClient.get(`/api/users/${id}`)
-    return response.data
-  },
+//   getUser: async (id: string) => {
+//     const response = await apiClient.get(`/api/users/${id}`)
+//     return response.data
+//   },
 
-  updateUser: async (id: string, userData: Partial<any>) => {
-    const response = await apiClient.put(`/api/users/${id}`, userData)
-    return response.data
-  },
-}
+//   updateUser: async (id: string, userData: Partial<any>) => {
+//     const response = await apiClient.put(`/api/users/${id}`, userData)
+//     return response.data
+//   },
+// }
 
 export default apiClient
