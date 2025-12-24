@@ -81,7 +81,7 @@ export function AddTaskForm({ onClose }: AddTaskFormProps) {
           Schedule Date & Time
         </label>
         <Input
-          type="datetime-local"
+          type="date"
           value={formData.scheduledAt}
           onChange={(e) => setFormData({ ...formData, scheduledAt: e.target.value })}
           disabled={isLoading}

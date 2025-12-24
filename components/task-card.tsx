@@ -101,10 +101,10 @@ export function TaskCard({ task, onTaskUpdated }: TaskCardProps) {
                       month: "short",
                       day: "numeric",
                     })}{" "}
-                    {new Date(task.scheduledAt).toLocaleTimeString("en-US", {
+                    {/* {new Date(task.scheduledAt).toLocaleTimeString("en-US", {
                       hour: "2-digit",
                       minute: "2-digit",
-                    })}
+                    })} */}
                   </span>
                 </div>
               </div>

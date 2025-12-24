@@ -98,7 +98,7 @@ export function AddTaskModal({ isOpen, onClose }: AddTaskModalProps) {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-2">Date</label>
                   <input
@@ -108,15 +108,7 @@ export function AddTaskModal({ isOpen, onClose }: AddTaskModalProps) {
                     className="w-full px-4 py-2 rounded-lg border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">Time</label>
-                  <input
-                    type="time"
-                    value={dueTime}
-                    onChange={(e) => setDueTime(e.target.value)}
-                    className="w-full px-4 py-2 rounded-lg border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                  />
-                </div>
+                
               </div>
 
               <Button

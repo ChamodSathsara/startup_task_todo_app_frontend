@@ -29,7 +29,7 @@ export default function Dashboard() {
   console.log(completedTasks, pendingTasks);
 
   const stats = [
-    { label: "Total Tasks", value: totalTasks, icon: Clock },
+    { label: "Today Tasks", value: pendingTasks+ completedTasks, icon: Clock },
     { label: "Pending", value: pendingTasks, icon: Zap },
     { label: "Completed", value: completedTasks, icon: CheckCircle2 },
   ];
