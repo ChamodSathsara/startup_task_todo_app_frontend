@@ -81,18 +81,26 @@ export function TaskCard({ task }: TaskCardProps) {
             </p>
             {task.description && <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{task.description}</p>}
             {task.scheduledAt && (
-              <div className="flex items-center gap-2 mt-3 text-xs text-muted-foreground">
-                <Clock className="w-4 h-4" />
-                <span>
-                  {new Date(task.scheduledAt).toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                  })}
-                  {new Date(task.scheduledAt).toLocaleTimeString("en-US", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </span>
+              <div className="flex items-center gap-2 mt-3">
+                <div
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
+                    task.status === "Completed"
+                      ? "bg-green-500/10 text-green-600 dark:text-green-400"
+                      : "bg-gray-500/10 text-gray-600 dark:text-gray-400"
+                  }`}
+                >
+                  <Clock className="w-3.5 h-3.5" />
+                  <span>
+                    {new Date(task.scheduledAt).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                    })}{" "}
+                    {new Date(task.scheduledAt).toLocaleTimeString("en-US", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
+                </div>
               </div>
             )}
           </div>
