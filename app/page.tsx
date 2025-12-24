@@ -60,11 +60,11 @@ export default function Dashboard() {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="bg-gradient-to-r from-blue-500 via-purple-500 to-cyan-500 px-6 md:px-8 py-12 md:py-16 rounded-2xl mx-6 md:mx-8 mt-6 md:mt-8 shadow-lg"
+          className="bg-gradient-to-r from-blue-500 via-purple-500 to-cyan-500 px-6 md:px-8 py-4 md:py-16 rounded-2xl mx-6 md:mx-8 mt-6 md:mt-8 shadow-lg"
         >
           <div className="max-w-4xl">
             <h2 className="text-2xl md:text-4xl font-bold text-white mb-3">Organize your time for more productive</h2>
-            <p className="text-white/90 text-base md:text-lg">
+            <p className="text-white/90 text-base md:text-lg hidden md:block">
               Stay focused and achieve your goals with our task tracker
             </p>
           </div>
