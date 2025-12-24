@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { MainLayout } from "@/components/main-layout"
 import { TaskCard } from "@/components/task-card"
 import { AddTaskForm } from "@/components/add-task-form"
@@ -10,9 +10,14 @@ import { Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 export default function TasksPage() {
-  const { tasks, fetchTasks } = useTask()
+  const { tasks, fetchTasks, loading } = useTask()
   const [showForm, setShowForm] = useState(false)
   const [filter, setFilter] = useState<"all" | "pending" | "completed">("all")
+
+  // Fetch tasks on mount
+  useEffect(() => {
+    fetchTasks()
+  }, [fetchTasks])
 
   const pendingTasks = tasks.filter((t) => t.status === "Pending")
   const completedTasks = tasks.filter((t) => t.status === "Completed")
@@ -37,9 +42,9 @@ export default function TasksPage() {
     },
   }
 
-  const handleFormClose = async () => {
+  const handleFormClose = () => {
     setShowForm(false)
-    await fetchTasks()
+    // No need to manually fetch tasks - context updates automatically
   }
 
   return (
@@ -68,7 +73,6 @@ export default function TasksPage() {
               exit={{ opacity: 0, y: -20 }}
               className="mb-8"
             >
-              {/* <AddTaskForm onClose={() => setShowForm(false)} /> */}
               <AddTaskForm onClose={handleFormClose} />
             </motion.div>
           )}
@@ -90,60 +94,69 @@ export default function TasksPage() {
             ))}
           </div>
 
-          {/* Tasks Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Pending Tasks */}
-            {(filter === "all" || filter === "pending") && (
-              <motion.div variants={containerVariants} initial="hidden" animate="visible">
-                <h2 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
-                  <span className="w-1 h-6 bg-amber-500 rounded"></span>
-                  Pending Tasks ({pendingTasks.length})
-                </h2>
-                <motion.div variants={containerVariants} className="space-y-3">
-                  {pendingTasks.length === 0 ? (
-                    <motion.div
-                      variants={itemVariants}
-                      className="bg-card border border-border rounded-lg p-8 text-center text-muted-foreground"
-                    >
-                      No pending tasks. Great job!
-                    </motion.div>
-                  ) : (
-                    pendingTasks.map((task) => (
-                      <motion.div key={task._id} variants={itemVariants}>
-                        <TaskCard task={task} />
-                      </motion.div>
-                    ))
-                  )}
-                </motion.div>
-              </motion.div>
-            )}
+          {/* Loading State */}
+          {loading && tasks.length === 0 && (
+            <div className="text-center py-12 text-muted-foreground">
+              Loading tasks...
+            </div>
+          )}
 
-            {/* Completed Tasks */}
-            {(filter === "all" || filter === "completed") && (
-              <motion.div variants={containerVariants} initial="hidden" animate="visible">
-                <h2 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
-                  <span className="w-1 h-6 bg-green-500 rounded"></span>
-                  Completed Tasks ({completedTasks.length})
-                </h2>
-                <motion.div variants={containerVariants} className="space-y-3">
-                  {completedTasks.length === 0 ? (
-                    <motion.div
-                      variants={itemVariants}
-                      className="bg-card border border-border rounded-lg p-8 text-center text-muted-foreground"
-                    >
-                      No completed tasks yet.
-                    </motion.div>
-                  ) : (
-                    completedTasks.map((task) => (
-                      <motion.div key={task._id} variants={itemVariants}>
-                        <TaskCard task={task} />
+          {/* Tasks Grid */}
+          {!loading || tasks.length > 0 ? (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Pending Tasks */}
+              {(filter === "all" || filter === "pending") && (
+                <motion.div variants={containerVariants} initial="hidden" animate="visible">
+                  <h2 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
+                    <span className="w-1 h-6 bg-amber-500 rounded"></span>
+                    Pending Tasks ({pendingTasks.length})
+                  </h2>
+                  <motion.div variants={containerVariants} className="space-y-3">
+                    {pendingTasks.length === 0 ? (
+                      <motion.div
+                        variants={itemVariants}
+                        className="bg-card border border-border rounded-lg p-8 text-center text-muted-foreground"
+                      >
+                        No pending tasks. Great job!
                       </motion.div>
-                    ))
-                  )}
+                    ) : (
+                      pendingTasks.map((task) => (
+                        <motion.div key={task._id} variants={itemVariants}>
+                          <TaskCard task={task} />
+                        </motion.div>
+                      ))
+                    )}
+                  </motion.div>
                 </motion.div>
-              </motion.div>
-            )}
-          </div>
+              )}
+
+              {/* Completed Tasks */}
+              {(filter === "all" || filter === "completed") && (
+                <motion.div variants={containerVariants} initial="hidden" animate="visible">
+                  <h2 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
+                    <span className="w-1 h-6 bg-green-500 rounded"></span>
+                    Completed Tasks ({completedTasks.length})
+                  </h2>
+                  <motion.div variants={containerVariants} className="space-y-3">
+                    {completedTasks.length === 0 ? (
+                      <motion.div
+                        variants={itemVariants}
+                        className="bg-card border border-border rounded-lg p-8 text-center text-muted-foreground"
+                      >
+                        No completed tasks yet.
+                      </motion.div>
+                    ) : (
+                      completedTasks.map((task) => (
+                        <motion.div key={task._id} variants={itemVariants}>
+                          <TaskCard task={task} />
+                        </motion.div>
+                      ))
+                    )}
+                  </motion.div>
+                </motion.div>
+              )}
+            </div>
+          ) : null}
         </div>
       </div>
     </MainLayout>

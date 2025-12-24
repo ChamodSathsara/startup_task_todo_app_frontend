@@ -5,14 +5,14 @@ import { useTask } from "@/context/task-context"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { toast } from "sonner" // Optional: for better notifications
 
 interface AddTaskFormProps {
-  onClose: () => Promise<void> | void
+  onClose: () => void
 }
 
 export function AddTaskForm({ onClose }: AddTaskFormProps) {
-  const { addTask } = useTask()
-  const [isLoading, setIsLoading] = useState(false)
+  const { addTask, loading } = useTask()
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -27,23 +27,31 @@ export function AddTaskForm({ onClose }: AddTaskFormProps) {
       return
     }
 
-    setIsLoading(true)
     try {
+      // Format scheduledAt if provided
+      const scheduledDate = formData.scheduledAt 
+        ? new Date(formData.scheduledAt).toISOString()
+        : undefined
+
+      // Create task - this will automatically update the UI
       await addTask({
         title: formData.title,
         description: formData.description || undefined,
-        scheduledAt: formData.scheduledAt || undefined,
+        scheduledAt: scheduledDate,
       })
       
       // Reset form
       setFormData({ title: "", description: "", scheduledAt: "" })
       
-      // Call onClose to refresh tasks and close form
-      await onClose()
-    } catch (error) {
+      // Optional: Show success message
+      // toast.success("Task created successfully!")
+      
+      // Close form
+      onClose()
+    } catch (error: any) {
       console.error("Error creating task:", error)
-    } finally {
-      setIsLoading(false)
+      alert(error.message || "Failed to create task")
+      // toast.error(error.message || "Failed to create task")
     }
   }
 
@@ -51,14 +59,14 @@ export function AddTaskForm({ onClose }: AddTaskFormProps) {
     <form onSubmit={handleSubmit} className="bg-card border border-border rounded-lg p-6 space-y-4">
       <div>
         <label className="block text-sm font-medium text-foreground mb-2">
-          Task Title
+          Task Title *
         </label>
         <Input
           type="text"
           placeholder="Enter task title..."
           value={formData.title}
           onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-          disabled={isLoading}
+          disabled={loading}
           required
         />
       </div>
@@ -71,7 +79,7 @@ export function AddTaskForm({ onClose }: AddTaskFormProps) {
           placeholder="Enter task description..."
           value={formData.description}
           onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-          disabled={isLoading}
+          disabled={loading}
           rows={3}
         />
       </div>
@@ -84,23 +92,23 @@ export function AddTaskForm({ onClose }: AddTaskFormProps) {
           type="datetime-local"
           value={formData.scheduledAt}
           onChange={(e) => setFormData({ ...formData, scheduledAt: e.target.value })}
-          disabled={isLoading}
+          disabled={loading}
         />
       </div>
 
       <div className="flex gap-3">
         <Button
           type="submit"
-          disabled={isLoading}
+          disabled={loading}
           className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
         >
-          {isLoading ? "Creating..." : "Create Task"}
+          {loading ? "Creating..." : "Create Task"}
         </Button>
         <Button
           type="button"
           variant="outline"
           onClick={onClose}
-          disabled={isLoading}
+          disabled={loading}
           className="flex-1"
         >
           Cancel

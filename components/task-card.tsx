@@ -1,159 +1,131 @@
 "use client"
 
 import { useState } from "react"
-import { motion } from "framer-motion"
-import { CheckCircle2, Circle, Edit2, Trash2, Clock } from "lucide-react"
-import { useTask, type Task } from "@/context/task-context"
+import { useTask } from "@/context/task-context"
+import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { EditTaskModal } from "@/components/edit-task-modal"
-import { ConfirmDialog } from "@/components/confirm-dialog"
+import { Checkbox } from "@/components/ui/checkbox"
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu"
+import { MoreVertical, Trash2, Edit, Calendar } from "lucide-react"
+import type { Task } from "@/lib/api.type"
+import { format } from "date-fns"
 
 interface TaskCardProps {
   task: Task
 }
 
 export function TaskCard({ task }: TaskCardProps) {
-  const { toggleTaskStatus, deleteTask } = useTask()
-  const [isEditOpen, setIsEditOpen] = useState(false)
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false)
-  const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false)
+  const { toggleTask, deleteTask, loading } = useTask()
   const [isDeleting, setIsDeleting] = useState(false)
-  const [isTogglingStatus, setIsTogglingStatus] = useState(false)
+  const [isToggling, setIsToggling] = useState(false)
 
-  const fetchTasks = useTask().fetchTasks;
-
-  const handleDelete = async () => {
-    setIsDeleting(true)
+  const handleToggle = async () => {
+    setIsToggling(true)
     try {
-      await deleteTask(task._id)
-      setIsDeleteOpen(false)
-      fetchTasks();
+      await toggleTask(task._id)
     } catch (error) {
-      console.error("[v0] Error deleting task:", error)
+      console.error("Error toggling task:", error)
     } finally {
-      setIsDeleting(false)
+      setIsToggling(false)
     }
   }
 
-  const handleToggleStatus = async () => {
-    setIsTogglingStatus(true)
-    try {
-      await toggleTaskStatus(task._id)
-      setIsStatusDialogOpen(false)
-      fetchTasks();
-    } catch (error) {
-      console.error("[v0] Error toggling status:", error)
-    } finally {
-      setIsTogglingStatus(false)
+  const handleDelete = async () => {
+    if (confirm("Are you sure you want to delete this task?")) {
+      setIsDeleting(true)
+      try {
+        await deleteTask(task._id)
+      } catch (error) {
+        console.error("Error deleting task:", error)
+        setIsDeleting(false)
+      }
     }
   }
 
   return (
-    <>
-      <motion.div
-        layout
-        initial={false}
-        exit={{ opacity: 0, scale: 0.95, y: -10 }}
-        transition={{ duration: 0.3 }}
-        className={`bg-card border border-border rounded-lg p-4 hover:shadow-md transition-shadow ${
-          task.status === "Completed" ? "opacity-75" : ""
-        }`}
-      >
-        <div className="flex items-start gap-4">
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setIsStatusDialogOpen(true)}
-            disabled={isTogglingStatus}
-            className="flex-shrink-0 mt-1 text-muted-foreground hover:text-primary transition-colors disabled:opacity-50"
-          >
-            {task.status === "Completed" ? (
-              <CheckCircle2 className="w-6 h-6 text-green-500" />
-            ) : (
-              <Circle className="w-6 h-6" />
-            )}
-          </motion.button>
+    <Card className={`transition-all duration-200 hover:shadow-md ${
+      task.status === "Completed" ? "opacity-75" : ""
+    }`}>
+      <CardContent className="p-4">
+        <div className="flex items-start gap-3">
+          {/* Checkbox */}
+          <Checkbox
+            checked={task.status === "Completed"}
+            onCheckedChange={handleToggle}
+            disabled={isToggling || loading}
+            className="mt-1"
+          />
 
-          {/* Content */}
+          {/* Task Content */}
           <div className="flex-1 min-w-0">
-            <p
-              className={`font-semibold text-foreground ${
-                task.status === "Completed" ? "line-through opacity-60" : ""
-              }`}
-            >
+            <h3 className={`font-semibold text-foreground mb-1 ${
+              task.status === "Completed" ? "line-through text-muted-foreground" : ""
+            }`}>
               {task.title}
-            </p>
-            {task.description && <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{task.description}</p>}
+            </h3>
+            
+            {task.description && (
+              <p className="text-sm text-muted-foreground mb-2">
+                {task.description}
+              </p>
+            )}
+
+            {/* Scheduled Date */}
             {task.scheduledAt && (
-              <div className="flex items-center gap-2 mt-3">
-                <div
-                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
-                    task.status === "Completed"
-                      ? "bg-green-500/10 text-green-600 dark:text-green-400"
-                      : "bg-gray-500/10 text-gray-600 dark:text-gray-400"
-                  }`}
-                >
-                  <Clock className="w-3.5 h-3.5" />
-                  <span>
-                    {new Date(task.scheduledAt).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                    })}{" "}
-                    {new Date(task.scheduledAt).toLocaleTimeString("en-US", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </span>
-                </div>
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <Calendar className="w-3 h-3" />
+                <span>
+                  {format(new Date(task.scheduledAt), "MMM dd, yyyy 'at' hh:mm a")}
+                </span>
               </div>
             )}
+
+            {/* Status Badge */}
+            <div className="mt-2">
+              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                task.status === "Pending" 
+                  ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400"
+                  : "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+              }`}>
+                {task.status}
+              </span>
+            </div>
           </div>
 
-          {/* Actions */}
-          <div className="flex items-center gap-2 ml-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsEditOpen(true)}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              <Edit2 className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsDeleteOpen(true)}
-              disabled={isDeleting}
-              className="text-muted-foreground hover:text-destructive"
-            >
-              <Trash2 className="w-4 h-4" />
-            </Button>
-          </div>
+          {/* Actions Menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-8 w-8"
+                disabled={isDeleting || loading}
+              >
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={handleToggle} disabled={isToggling}>
+                <Edit className="mr-2 h-4 w-4" />
+                {task.status === "Pending" ? "Mark Complete" : "Mark Pending"}
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={handleDelete} 
+                disabled={isDeleting}
+                className="text-destructive"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
-      </motion.div>
-
-      <EditTaskModal isOpen={isEditOpen} onClose={() => setIsEditOpen(false)} task={task} />
-
-      <ConfirmDialog
-        isOpen={isDeleteOpen}
-        title="Delete Task"
-        description="Are you sure you want to delete this task? This action cannot be undone."
-        onConfirm={handleDelete}
-        onCancel={() => setIsDeleteOpen(false)}
-        confirmText="Delete"
-        confirmVariant="destructive"
-        isLoading={isDeleting}
-      />
-
-      <ConfirmDialog
-        isOpen={isStatusDialogOpen}
-        title="Update Task Status"
-        description={`Mark this task as ${task.status === "Completed" ? "Pending" : "Completed"}?`}
-        onConfirm={handleToggleStatus}
-        onCancel={() => setIsStatusDialogOpen(false)}
-        confirmText={task.status === "Completed" ? "Mark as Pending" : "Mark as Completed"}
-        isLoading={isTogglingStatus}
-      />
-    </>
+      </CardContent>
+    </Card>
   )
 }
