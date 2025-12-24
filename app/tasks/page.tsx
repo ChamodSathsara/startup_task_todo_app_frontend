@@ -12,14 +12,31 @@ import { Button } from "@/components/ui/button"
 export default function TasksPage() {
   const { tasks, fetchTasks } = useTask()
   const [showForm, setShowForm] = useState(false)
-  const [filter, setFilter] = useState<"all" | "pending" | "completed">("all")
+  const [filter, setFilter] = useState<"all"| "today" | "pending" | "completed" >("today")
   const [key, setKey] = useState(0) // Key to force re-render of tasks grid
 
+  // Get current date
+  const currentDate = new Date().toLocaleDateString('en-US', { 
+    weekday: 'long', 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric' 
+  })
+
   // Use useMemo to compute filtered tasks whenever tasks change
-  const { pendingTasks, completedTasks } = useMemo(() => {
+  const { pendingTasks, completedTasks, todayTasks } = useMemo(() => {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    
     const pending = tasks.filter((t) => t.status === "Pending")
     const completed = tasks.filter((t) => t.status === "Completed")
-    return { pendingTasks: pending, completedTasks: completed }
+    const todayFiltered = tasks.filter((t) => {
+      const taskDate = new Date(t.createdAt)
+      taskDate.setHours(0, 0, 0, 0)
+      return taskDate.getTime() === today.getTime()
+    })
+    
+    return { pendingTasks: pending, completedTasks: completed, todayTasks: todayFiltered }
   }, [tasks])
 
   const containerVariants = {
@@ -59,13 +76,16 @@ export default function TasksPage() {
         <div className="sticky top-0 bg-background/95 backdrop-blur border-b border-border z-40">
           <div className="px-6 md:px-8 py-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <h1 className="text-3xl md:text-4xl font-bold text-foreground">Tasks</h1>
-            <Button
-              onClick={() => setShowForm(!showForm)}
-              className="w-full md:w-auto bg-primary text-primary-foreground hover:bg-primary/90 flex items-center justify-center gap-2"
-            >
-              <Plus className="w-5 h-5" />
-              Add Task
-            </Button>
+            <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
+              <p className="text-sm text-muted-foreground">{currentDate}</p>
+              <Button
+                onClick={() => setShowForm(!showForm)}
+                className="w-full md:w-auto bg-primary text-primary-foreground hover:bg-primary/90 hidden md:flex items-center justify-center gap-2"
+              >
+                <Plus className="w-5 h-5" />
+                Add Task
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -86,7 +106,7 @@ export default function TasksPage() {
 
           {/* Filter Tabs */}
           <div className="flex gap-2 mb-8 overflow-x-auto">
-            {(["all", "pending", "completed"] as const).map((f) => (
+            {(["today","all",  "pending", "completed"] as const).map((f) => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
@@ -103,6 +123,32 @@ export default function TasksPage() {
 
           {/* Tasks Grid - key prop forces re-render with animation */}
           <div key={key} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Today Tasks */}
+            {filter === "today" && (
+              <motion.div variants={containerVariants} initial="hidden" animate="visible" className="lg:col-span-2">
+                <h2 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
+                  <span className="w-1 h-6 bg-blue-500 rounded"></span>
+                  Today's Tasks ({todayTasks.length})
+                </h2>
+                <motion.div variants={containerVariants} className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                  {todayTasks.length === 0 ? (
+                    <motion.div
+                      variants={itemVariants}
+                      className="bg-card border border-border rounded-lg p-8 text-center text-muted-foreground lg:col-span-2"
+                    >
+                      No tasks created today.
+                    </motion.div>
+                  ) : (
+                    todayTasks.map((task) => (
+                      <motion.div key={task._id} variants={itemVariants}>
+                        <TaskCard task={task} onTaskUpdated={handleTaskUpdated} />
+                      </motion.div>
+                    ))
+                  )}
+                </motion.div>
+              </motion.div>
+            )}
+
             {/* Pending Tasks */}
             {(filter === "all" || filter === "pending") && (
               <motion.div variants={containerVariants} initial="hidden" animate="visible">

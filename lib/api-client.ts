@@ -33,6 +33,7 @@ export const taskAPI = {
 
   // update existing task
   updateTask: async (id: string, taskData: Partial<any>) => {
+    console.log("updating:", id, taskData);
     const response = await apiClient.put(`/api/tasks/${id}`, taskData)
     return response.data
   },
@@ -50,23 +51,5 @@ export const taskAPI = {
     return response.data
   },
 }
-
-// User API endpoints
-// export const userAPI = {
-//   createUser: async (userData: { name: string; email: string; password: string }) => {
-//     const response = await apiClient.post("/api/users", userData)
-//     return response.data
-//   },
-
-//   getUser: async (id: string) => {
-//     const response = await apiClient.get(`/api/users/${id}`)
-//     return response.data
-//   },
-
-//   updateUser: async (id: string, userData: Partial<any>) => {
-//     const response = await apiClient.put(`/api/users/${id}`, userData)
-//     return response.data
-//   },
-// }
 
 export default apiClient

@@ -10,8 +10,20 @@ import { TaskCard } from "@/components/task-card";
 export default function Dashboard() {
   const { tasks } = useTask();
   const isMobile = useIsMobile();
-  const pendingTasks = tasks.filter((t) => t.status === "Pending").length;
-  const completedTasks = tasks.filter((t) => t.status === "Completed").length;
+const today = new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD
+
+const pendingTasks = tasks.filter(
+  (t) =>
+    t.status === "Pending" &&
+    new Date(t.createdAt).toLocaleDateString("en-CA") === today
+).length;
+
+const completedTasks = tasks.filter(
+  (t) =>
+    t.status === "Completed" &&
+    new Date(t.createdAt).toLocaleDateString("en-CA") === today
+).length;
+
   const totalTasks = tasks.length;
 
   const stats = [

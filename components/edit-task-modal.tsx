@@ -18,8 +18,8 @@ export function EditTaskModal({ isOpen, onClose, task }: EditTaskModalProps) {
   const { updateTask } = useTask()
   const [title, setTitle] = useState(task.title)
   const [description, setDescription] = useState(task.description || "")
-  const [dueDate, setDueDate] = useState(task.dueDate || "")
-  const [dueTime, setDueTime] = useState(task.dueTime || "")
+  const [dueDate, setDueDate] = useState(task.createdAt || "")
+  const [dueTime, setDueTime] = useState(task.createdAt || "")
   const [isLoading, setIsLoading] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -29,11 +29,11 @@ export function EditTaskModal({ isOpen, onClose, task }: EditTaskModalProps) {
     setIsLoading(true)
     await new Promise((resolve) => setTimeout(resolve, 500))
 
-    updateTask(task.id, {
+    updateTask(task._id, {
       title,
       description: description || undefined,
-      dueDate: dueDate || undefined,
-      dueTime: dueTime || undefined,
+      createdAt: dueDate || undefined,
+      // createdAt: dueTime || undefined,
     })
 
     setIsLoading(false)
