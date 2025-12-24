@@ -32,9 +32,9 @@ export function AddTaskModal({ isOpen, onClose }: AddTaskModalProps) {
     addTask({
       title,
       description: description || undefined,
-      dueDate,
+      dueDate: dueDate || undefined,
       dueTime: dueTime || undefined,
-      status: "pending",
+      status: "Pending",
     })
 
     setTitle("")

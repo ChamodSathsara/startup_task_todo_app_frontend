@@ -18,6 +18,8 @@ export function MainLayout({ children }: MainLayoutProps) {
 
   return (
     <div className="min-h-screen bg-background">
+
+      {/* desktop sidebar eka  */}
       {!isMobile && <Sidebar onOpenChange={setSidebarOpen} />}
       <motion.main
         initial={false}
@@ -29,6 +31,8 @@ export function MainLayout({ children }: MainLayoutProps) {
       >
         <div className="w-full max-w-7xl px-4">{children}</div>
       </motion.main>
+
+       {/* mobile sidebar eka  */}
       {isMobile && <MobileNav />}
     </div>
   )
